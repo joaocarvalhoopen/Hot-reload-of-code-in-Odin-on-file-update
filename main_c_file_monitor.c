@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/inotify.h>
+#include <string.h>
 
 #define EVENT_SIZE (sizeof(struct inotify_event))
 #define BUF_LEN (1024 * (EVENT_SIZE + 16))
-
 
 char buffer[BUF_LEN];
 int length, i = 0;
@@ -35,10 +35,12 @@ extern int file_monitor_init( char * file_path ) {
 }
 
 extern int file_monitor_file_as_changed( ) {
-    i = 0; // jnc: reset the index
-    length = read(fd, buffer, BUF_LEN);
+    // i = 0;
+    // Set all elements of the array buffer to 0.
+    // memset( buffer, 0, sizeof( buffer ) );
+    length = read(fd, &buffer[ i ], BUF_LEN);
     int flag_modified = 0;
-//    while (* i < length && flag_not_return == 1) {
+    while ( i < length ) {
         struct inotify_event *event = (struct inotify_event *) &buffer[i];
         if (event->len) {
             if (event->mask & IN_MODIFY) {
@@ -47,7 +49,7 @@ extern int file_monitor_file_as_changed( ) {
             }
         }
         i += EVENT_SIZE + event->len;
-//  }
+    }
 
     return flag_modified;
 }

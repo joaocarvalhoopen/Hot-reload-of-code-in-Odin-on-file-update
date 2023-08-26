@@ -5,7 +5,7 @@ import "core:c"
 import "core:fmt"
 import "core:runtime"
 import "core:strings"
-// import "core:time"
+import "core:time"
 // import "core:c/libc"
 
 
@@ -30,9 +30,9 @@ main :: proc() {
     DLL_LIBRARY_PATH_cstring : cstring = strings.clone_to_cstring( DLL_LIBRARY_PATH )
 
 
-    // Initialize the file monitor.
-    res_1: c.int = file_monitor_init( DLL_LIBRARY_PATH_cstring )
-    defer file_monitor_rm_watch( )
+    // // Initialize the file monitor.
+    // res_1: c.int = file_monitor_init( DLL_LIBRARY_PATH_cstring )
+    // defer file_monitor_rm_watch( )
 
     library : dynlib.Library
     ok : bool
@@ -104,18 +104,21 @@ main :: proc() {
         
         // library = nil
 
+        // Initialize the file monitor.
+        res_1: c.int = file_monitor_init( DLL_LIBRARY_PATH_cstring )
+
         // Wait for the file to change.
         res_2 = file_monitor_file_as_changed()
-      
+
+        // Remove the file monitor.
+        _ = file_monitor_rm_watch( )
+
         fmt.printf( "The file %v was changed", DLL_LIBRARY_PATH )
 
-        // Sleep for 5 second
-        // This may be removed by the -speed compile flag, optimization.
-        tmp := 0
-        for i in 0..=1099999999 {
-            tmp += 1;
-        }
-
-        fmt.println( "After wait for DLL dynamic file to be written to disk [%v]", tmp )
+        // Sleep for 5 second to give time for the DLL dynamic file to finish being written to disk.
+        duration_sec : time.Duration = 2 * time.Second
+        time.sleep( duration_sec )
+ 
+        fmt.println( "After wait for DLL dynamic file to be written to disk, and after 2 seconds" )        
     }
 }
